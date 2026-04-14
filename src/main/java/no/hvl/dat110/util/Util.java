@@ -47,7 +47,7 @@ public class Util {
 		}
 	}
 
-
+//chec
 	
 	public static List<String> toString(List<NodeInterface> list) throws RemoteException {
 		List<String> nodestr = new ArrayList<String>();
