@@ -30,21 +30,23 @@ public class ChordLookup {
 	public ChordLookup(Node node) {
 		this.node = node;
 	}
-	
+
 	public NodeInterface findSuccessor(BigInteger key) throws RemoteException {
-		// ask this node to find the successor of key
-		
-		// get the successor of the node
-		
-		// check that key is a member of the set {nodeid+1,...,succID} i.e. (nodeid+1 <= key <= succID) using the checkInterval
-		
-		// if logic returns true, then return the successor
-		
-		// if logic returns false; call findHighestPredecessor(key)
-		
-		// do highest_pred.findSuccessor(key) - This is a recursive call until logic returns true
-				
-		return null;					
+
+		NodeInterface succ = node.getSuccessor();
+
+		BigInteger nodeid = node.getNodeID();
+		BigInteger succID = succ.getNodeID();
+
+		boolean cond = Util.checkInterval(key, nodeid.add(BigInteger.ONE), succID);
+
+		if (cond) {
+			return succ;
+		}
+
+		NodeInterface highest_pred = findHighestPredecessor(key);
+
+		return highest_pred.findSuccessor(key);
 	}
 	
 	/**
@@ -54,18 +56,34 @@ public class ChordLookup {
 	 * @throws RemoteException
 	 */
 	private NodeInterface findHighestPredecessor(BigInteger ID) throws RemoteException {
-		
-		// collect the entries in the finger table for this node
-		
-		// starting from the last entry, iterate over the finger table
-		
-		// for each finger, obtain a stub from the registry
-		
-		// check that finger is a member of the set {nodeID+1,...,ID-1} i.e. (nodeID+1 <= finger <= key-1) using the ComputeLogic
-		
-		// if logic returns true, then return the finger (means finger is the closest to key)
-		
-		return (NodeInterface) node;			
+
+		List<NodeInterface> fingers = node.getFingerTable();
+		BigInteger nodeID = node.getNodeID();
+
+		for (int i = fingers.size() - 1; i >= 0; i--) {
+
+			NodeInterface finger = fingers.get(i);
+
+			if (finger == null) {
+				continue;
+			}
+
+			NodeInterface stub = Util.getProcessStub(finger.getNodeName(), finger.getPort());
+
+			if (stub == null) {
+				continue;
+			}
+
+			BigInteger fingerID = stub.getNodeID();
+
+			boolean cond = Util.checkInterval(fingerID, nodeID.add(BigInteger.ONE), ID.subtract(BigInteger.ONE));
+
+			if (cond) {
+				return stub;
+			}
+		}
+
+		return (NodeInterface) node;
 	}
 	
 	public void copyKeysFromSuccessor(NodeInterface succ) {
